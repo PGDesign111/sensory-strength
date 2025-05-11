@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מחשבון עוצמה חושית</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; direction: rtl; padding: 2rem; }
+    .slider-container { margin-bottom: 1.5rem; }
+    label { display: block; margin-bottom: 0.2rem; }
+    input[type="range"] { width: 100%; }
+    canvas { max-width: 700px; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  <h1>מחשבון עוצמה יחסית של חושים</h1>
+  <div class="slider-container">
+    <label>משקל לכמות מידע (I): <span id="w1v">1</span></label>
+    <input type="range" id="w1" min="0" max="3" step="0.1" value="1" />
+  </div>
+  <div class="slider-container">
+    <label>משקל לרזולוציה (R): <span id="w2v">1</span></label>
+    <input type="range" id="w2" min="0" max="3" step="0.1" value="1" />
+  </div>
+  <div class="slider-container">
+    <label>משקל לשליטה קוגניטיבית (C): <span id="w3v">1</span></label>
+    <input type="range" id="w3" min="0" max="3" step="0.1" value="1" />
+  </div>
+  <canvas id="strengthChart"></canvas>
+
+  <script>
+    const senses = [
+      { name: "ראייה", I: 5, R: 5, C: 5 },
+      { name: "שמיעה", I: 4, R: 4, C: 4 },
+      { name: "מישוש", I: 3, R: 4, C: 3 },
+      { name: "ריח", I: 2, R: 3, C: 4 },
+      { name: "טעם", I: 1, R: 2, C: 2 }
+    ];
+
+    const ctx = document.getElementById('strengthChart').getContext('2d');
+    let chart;
+
+    function computeData(w1, w2, w3) {
+      return senses.map(s => s.I * w1 + s.R * w2 + s.C * w3);
+    }
+
+    function updateChart() {
+      const w1 = parseFloat(document.getElementById('w1').value);
+      const w2 = parseFloat(document.getElementById('w2').value);
+      const w3 = parseFloat(document.getElementById('w3').value);
+      document.getElementById('w1v').textContent = w1;
+      document.getElementById('w2v').textContent = w2;
+      document.getElementById('w3v').textContent = w3;
+
+      const data = computeData(w1, w2, w3);
+      chart.data.datasets[0].data = data;
+      chart.update();
+    }
+
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: senses.map(s => s.name),
+        datasets: [{
+          label: 'עוצמה יחסית',
+          data: computeData(1, 1, 1),
+          backgroundColor: 'rgba(75, 192, 192, 0.5)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 20
+          }
+        },
+        plugins: {
+          legend: { position: 'top' },
+          title: {
+            display: true,
+            text: 'עוצמה יחסית של חושים לפי משקלים'
+          }
+        }
+      }
+    });
+
+    ['w1', 'w2', 'w3'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateChart);
+    });
+  </script>
+</body>
+</html>
